@@ -1,0 +1,9 @@
+{
+  "name": "percentage-rollout-distribution",
+  "version": "1.0.0",
+  "description": "LaunchDarkly Sample Node.js Application for Percentage Rollout Validation",
+  "main": "index.js",
+  "dependencies": {
+    "@launchdarkly/node-server-sdk": ">= 9.0.0"
+  }
+}
