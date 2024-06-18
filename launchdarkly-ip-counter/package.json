@@ -1,0 +1,14 @@
+{
+  "name": "ip-counter",
+  "version": "1.0.0",
+  "main": "ld_ip_counter.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "ip-range-check": "^0.2.0"
+  }
+}

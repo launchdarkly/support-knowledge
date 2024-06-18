@@ -1,0 +1,1 @@
+netstat -n | awk '{print $5}' | awk '/Address/,/Foreign/{if (!/Address/ && !/Foreign/) print}' | sed 's/\.[^.]*$//'

@@ -1,0 +1,1 @@
+bash get_all_current_ips.sh >> all_ips.txt
