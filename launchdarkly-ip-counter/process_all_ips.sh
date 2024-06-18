@@ -1,0 +1,1 @@
+cat all_ips.txt | node ld_ip_counter.js

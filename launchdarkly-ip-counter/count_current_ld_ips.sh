@@ -1,0 +1,1 @@
+bash get_all_current_ips.sh | node ld_ip_counter.js
