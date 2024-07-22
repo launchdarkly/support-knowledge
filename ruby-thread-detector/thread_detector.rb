@@ -1,5 +1,5 @@
 # Copy this function into your application to detect if the LaunchDarkly SDK has been implemented properly.
-# This function will return true if both are running in the same thread, and false otherwise.
+# This function will return true if both LaunchDarkly threads are running, and false otherwise.
 
 def are_launchdarkly_threads_running?
   has_launchdarkly = false
