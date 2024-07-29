@@ -13,7 +13,7 @@ curl -i -H "Authorization: SDK_KEY" https://stream.launchdarkly.com/all > ld_fil
 ## Usage
 
 ```
-python targeting_comparison.py /path/to/ld_file.json
+python find_duplicate_targets.py /path/to/ld_file.json
 ```
 
 or
@@ -24,6 +24,21 @@ python find_unused_segments.py /path/to/ld_file.json
 
 ### Understanding the data
 
+For finding the context keys that are individually-targeted in 2 or more places in an environment, here's is the structure of the data:
+
+```
+<contextKey>: {
+    'duplicate_flag_or_segment_key': [
+      '<ldResourceType>: <ldResourceKey>', 
+      '<ldResourceType>: <ldResourceKey>', 
+      ...
+    ], 
+    'occurrences': <numberOfValuesInDuplicateArray + 1>
+}
+```
+
+Where `ldResourceType` can either be a flag or segment. `ldResourceKey` is the `key` for the flag or segment.
+The `duplicate_flag_or_segment_key` array of keys does not include the "first" instance the context was found.
 
 
 ### Support
