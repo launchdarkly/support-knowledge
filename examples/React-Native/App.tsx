@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { MOBILE_KEY } from '@env';
 import {
   AutoEnvAttributes,
@@ -6,7 +7,6 @@ import {
   LDOptions,
 } from '@launchdarkly/react-native-client-sdk';
 import Welcome from './src/welcome';
-
 
 const options: LDOptions = {
   applicationInfo: {
@@ -17,15 +17,32 @@ const options: LDOptions = {
   },
   debug: true,
 }
-//TODO Set MOBILE_KEY in .env file to a mobile key in your project/environment.
-const featureClient = new ReactNativeLDClient(MOBILE_KEY, AutoEnvAttributes.Enabled, options);
+
 const userContext = { kind: 'user', key: 'test-hello' };
 
 export default function App() {
-  featureClient.identify(userContext).catch((e: any) => console.log(e));
+  const [client, setClient] = useState<ReactNativeLDClient | null>(null);
+  
+  useEffect(() => {
+    // Initialize client
+    const featureClient = new ReactNativeLDClient(MOBILE_KEY, AutoEnvAttributes.Enabled, options);
+    
+    featureClient.identify(userContext).catch((e: any) => console.log(e));
+    
+    setClient(featureClient);
+    
+    // Cleanup function that runs when component unmounts
+    return () => {
+      featureClient.close();
+    };
+  }, []);
+
+  if (!client) {
+    return null;
+  }
 
   return (
-    <LDProvider client={featureClient}>
+    <LDProvider client={client}>
       <Welcome />
     </LDProvider>
   );
