@@ -9,12 +9,13 @@ import {
 import Welcome from './src/welcome';
 
 const options: LDOptions = {
-  applicationInfo: {
-    id: 'Hello-React-Native-Expo',
-    name: 'Sample Application',
-    version: '1.0.0',
-    versionName: 'v1',
-  },
+  // Optional: Set Application Info
+  // applicationInfo: {
+  //   id: 'Hello-React-Native-Expo',
+  //   name: 'Sample Application',
+  //   version: '1.0.0',
+  //   versionName: 'v1',
+  // },
   debug: true,
 }
 
