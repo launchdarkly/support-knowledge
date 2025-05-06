@@ -9,13 +9,14 @@ import {
 import Welcome from './src/welcome';
 
 const options: LDOptions = {
-  // Optional: Set Application Info
-  // applicationInfo: {
-  //   id: 'Hello-React-Native-Expo',
-  //   name: 'Sample Application',
-  //   version: '1.0.0',
-  //   versionName: 'v1',
-  // },
+  // Optional: Configure application metadata for engineering insights.
+  // https://launchdarkly.com/docs/home/releases/applications
+  applicationInfo: {
+    id: 'Hello-React-Native-Expo',
+    name: 'Sample Application',
+    version: '1.0.0',
+    versionName: 'v1',
+  },
   debug: true,
 }
 
