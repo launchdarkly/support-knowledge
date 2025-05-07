@@ -1,0 +1,31 @@
+{
+  "name": "hello-react-native-expo",
+  "version": "1.0.0",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "android-release": "expo run:android --variant release",
+    "ios": "expo start --ios",
+    "clean-reset": "yarn cache clean && rm -rf node_modules && rm -rf .expo && rm -rf yarn.lock",
+    "watchman-reset": "watchman watch-del-all && watchman shutdown-server"
+  },
+  "dependencies": {
+    "@launchdarkly/react-native-client-sdk": "^10.9.8",
+    "@react-native-community/cli-server-api": "^17.0.0",
+    "expo": "^52.0.44",
+    "expo-splash-screen": "~0.29.22",
+    "expo-status-bar": "~2.0.1",
+    "react": "18.3.1",
+    "react-native": "0.76.9",
+    "react-native-dotenv": "^3.4.11"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.10",
+    "@types/react": "~18.3.12",
+    "@types/react-native-dotenv": "^0.2.2",
+    "typescript": "^5.8.3"
+  },
+  "private": true,
+  "packageManager": "yarn@3.4.1"
+}
