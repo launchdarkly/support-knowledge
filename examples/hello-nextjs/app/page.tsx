@@ -5,7 +5,7 @@ import { useFlags } from 'launchdarkly-react-client-sdk';
 export default function Page() {
   const flags = useFlags();
   //TODO Set my-boolean-flag to a valid boolean flag key in your project/environment.
-  const value = flags['bool-flag'] ?? false;
+  const value = flags['my-boolean-flag'] ?? false;
 
   return (
     <main className="container">
