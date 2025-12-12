@@ -9,6 +9,6 @@ export async function GET() {
 
   await client.waitForInitialization({ timeout: 5 });
   //TODO Set my-boolean-flag to a valid boolean flag key in your project/environment.
-  const value = await client.variation('bool-flag', context, false);
+  const value = await client.variation('my-boolean-flag', context, false);
   return NextResponse.json({ value });
 }
