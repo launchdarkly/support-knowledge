@@ -1,9 +1,7 @@
 #!/bin/sh
 # ld-netcheck-quick.sh - zero-dependency LaunchDarkly connectivity triage.
 #
-# Uses only POSIX sh + curl. Intended as the first thing to hand a customer in
-# a locked-down environment that will not run an unknown binary or interpreter.
-# It checks DNS, TCP/TLS, and HTTP reachability for the streaming (init),
+# Uses only POSIX sh + curl. It checks DNS, TCP/TLS, and HTTP reachability for the streaming (init),
 # polling (init), and events endpoints, plus a short streaming hold test.
 #
 # It never prints the SDK key. Provide it via the LD_SDK_KEY environment
@@ -17,7 +15,9 @@
 #   LD_SIDE       server | client               (default: server)
 #   LD_HOLD       stream hold seconds           (default: 10)
 #   LD_TIMEOUT    per-request timeout seconds   (default: 10)
-#   Overrides:    LD_STREAM_URL  LD_POLL_URL  LD_EVENTS_URL  (or LD_RELAY)
+#   Overrides:    LD_STREAM_URL  LD_POLL_URL  LD_POLL_APP_URL  LD_EVENTS_URL
+#                (or LD_RELAY — stream/poll/events go through relay; client-side
+#                 JS still checks app directly for the alternate poll host)
 #
 # Reference: https://launchdarkly.com/docs/sdk/concepts/domain-list
 
@@ -45,22 +45,31 @@ esac
 if [ "$SIDE" = "server" ]; then
   STREAM_HOST="stream.$DOM";       STREAM_PATH="/all"
   POLL_HOST="sdk.$DOM";            POLL_PATH="/sdk/latest-all"
+  APP_HOST="";                     APP_PATH=""
 else
   STREAM_HOST="clientstream.$DOM"; STREAM_PATH="/eval"
   POLL_HOST="clientsdk.$DOM";      POLL_PATH="/sdk/evalx"
+  APP_HOST="app.$DOM";             APP_PATH="/sdk/evalx"
 fi
-# events host: mobile uses mobile.<dom> for commercial/federal; we default to
-# the events host, which is correct for server and client-side JS.
+# events host for server and client-side JS. Mobile SDK endpoints are out of
+# scope for this tool.
 EVENTS_HOST="events.$DOM";         EVENTS_PATH="/bulk"
 
 STREAM_URL="https://$STREAM_HOST$STREAM_PATH"
 POLL_URL="https://$POLL_HOST$POLL_PATH"
+APP_URL=""
+[ -n "$APP_HOST" ] && APP_URL="https://$APP_HOST$APP_PATH"
 EVENTS_URL="https://$EVENTS_HOST$EVENTS_PATH"
 
 # Overrides
-[ -n "${LD_RELAY:-}" ] && { STREAM_URL="${LD_RELAY%/}$STREAM_PATH"; POLL_URL="${LD_RELAY%/}$POLL_PATH"; EVENTS_URL="${LD_RELAY%/}$EVENTS_PATH"; }
+[ -n "${LD_RELAY:-}" ] && {
+  STREAM_URL="${LD_RELAY%/}$STREAM_PATH"
+  POLL_URL="${LD_RELAY%/}$POLL_PATH"
+  EVENTS_URL="${LD_RELAY%/}$EVENTS_PATH"
+}
 [ -n "${LD_STREAM_URL:-}" ] && STREAM_URL="$LD_STREAM_URL"
 [ -n "${LD_POLL_URL:-}" ]   && POLL_URL="$LD_POLL_URL"
+[ -n "${LD_POLL_APP_URL:-}" ] && APP_URL="$LD_POLL_APP_URL"
 [ -n "${LD_EVENTS_URL:-}" ] && EVENTS_URL="$LD_EVENTS_URL"
 
 AUTH=""
@@ -105,6 +114,7 @@ probe() { # name method url path
 }
 
 probe "poll (init)"   GET  "$POLL_URL"
+[ -n "$APP_URL" ] && probe "poll (app)" GET "$APP_URL"
 probe "events"        POST "$EVENTS_URL"
 
 # --- Stream status + hold (single request) ----------------------------------

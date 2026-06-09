@@ -1,12 +1,14 @@
 # ld-netcheck
 
-A connectivity diagnostic for the LaunchDarkly SDKs. It tests whether an
-environment can reach the **streaming (init)**, **polling (init)**, and
-**events** endpoints, and — when it can't — tells you *why* and *how to fix
-it*, mapped to the failure modes LaunchDarkly endpoints actually produce.
+A connectivity diagnostic for **server-side SDKs** and **client-side JavaScript**.
+It tests whether an environment can reach the **streaming (init)**, **polling
+(init)**, and **events** endpoints, and — when it can't — tells you *why* and
+*how to fix it*, mapped to the failure modes LaunchDarkly endpoints actually
+produce.
 
-Hand this to a customer (or run it yourself) when an SDK won't initialize,
-the stream keeps reconnecting, or events aren't arriving.
+**Mobile SDKs (iOS/Android) are out of scope.** This tool runs on a host machine
+with Python/curl and cannot exercise the device TLS stack, ATS, or certificate
+pinning.
 
 There are two tiers:
 
@@ -70,8 +72,9 @@ python3 ld_netcheck.py
 python3 ld_netcheck.py --instance eu --side client
 python3 ld_netcheck.py --instance federal --side server
 
-# Test a Relay Proxy (single base URI proxies all three services)
+# Test a Relay Proxy (stream/poll/events go through relay; use --side for paths)
 python3 ld_netcheck.py --relay https://relay.internal:8030
+python3 ld_netcheck.py --relay https://relay.internal:8030 --side client
 
 # Override individual endpoints (e.g. a private instance)
 python3 ld_netcheck.py \
@@ -88,8 +91,9 @@ python3 ld_netcheck.py --sdk-key-env LD_SDK_KEY --hold 120
 python3 ld_netcheck.py --json
 ```
 
-Key flags: `--instance {commercial,eu,federal}`, `--side {server,client,mobile}`,
-`--relay`, `--stream-url/--poll-url/--events-url`, `--sdk-key-env` (preferred)
+Key flags: `--instance {commercial,eu,federal}`, `--side {server,client}`,
+`--relay`, `--stream-url/--poll-url/--poll-app-url/--events-url`,
+`--sdk-key-env` (preferred)
 or `--sdk-key`, `--hold SECONDS` (0 to skip), `--timeout SECONDS`,
 `--allow-insecure` (permit `http://`, e.g. a local relay), `--json`,
 `--no-color`.
@@ -123,10 +127,26 @@ failure. Useful for wiring into CI or a health check.
 | eu | `stream` / `sdk` / `events` `.eu.launchdarkly.com` |
 | federal | `stream` / `sdk` / `events` `.launchdarkly.us` |
 
-Client/mobile sides use `clientstream` / `clientsdk`, and mobile events use
-`mobile.launchdarkly.com` on the commercial instance. The tool does not hardcode
-IP ranges (LaunchDarkly is fronted by Fastly and AWS, and those change); it
-reports whatever the host resolves.
+| Instance | Client-side JS stream / poll / events |
+|----------|---------------------------------------|
+| commercial | `clientstream` / `clientsdk` + `app` / `events` `.launchdarkly.com` |
+| eu | `clientstream` / `clientsdk` + `app` / `events` `.eu.launchdarkly.com` |
+| federal | `clientstream` / `clientsdk` + `app` / `events` `.launchdarkly.us` |
+
+Client-side JS (`--side client`) uses `clientstream` for streaming,
+`clientsdk` and `app` for polling (both are tested — the JS SDK may use either),
+and `events` for event delivery. With `--relay`, stream/poll/events are sent
+through the Relay Proxy (v9 uses streaming and polling for init), but the direct
+`app` poll check still runs so allowlisting gaps are not missed. The tool does
+not hardcode IP ranges
+(LaunchDarkly is fronted by Fastly and AWS, and those change); it reports
+whatever the host resolves.
+
+### Mobile SDKs
+
+Not supported. Mobile endpoints (`/meval`, `/msdk/evalx`, `mobile.launchdarkly.com`)
+require diagnostics that run on or from the device itself. Do not use this tool
+for mobile SDK connectivity cases.
 
 ## Security
 

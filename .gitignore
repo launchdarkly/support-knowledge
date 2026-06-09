@@ -4,3 +4,4 @@ package-lock.json
 launchdarkly-ip-counter/all_ips.txt
 *.csv
 .vscode
+__pycache__

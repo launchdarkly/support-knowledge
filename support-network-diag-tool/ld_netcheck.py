@@ -7,8 +7,7 @@ polling (init), and events endpoints, and explains how to unblock them when
 it cannot. Standard library only - no third-party dependencies.
 
 The checks and remediation mapping are grounded in the LaunchDarkly public
-domain list (https://launchdarkly.com/docs/sdk/concepts/domain-list) and the
-internal Network Troubleshooting Checklist failure modes:
+domain list (https://launchdarkly.com/docs/sdk/concepts/domain-list):
 
   401              -> SDK key missing/incorrect (auth, not network)
   403 / Forbidden  -> endpoint not allowlisted in firewall or CSP
@@ -43,10 +42,23 @@ VERSION = "1.0.0"
 # Paths used by the real SDKs for the initial flag payload and events.
 PATHS = {
     "server": {"stream": "/all", "poll": "/sdk/latest-all", "events": "/bulk"},
-    # Client/mobile init paths are context-specific; for a connectivity probe
+    # Client-side init paths are context-specific; for a connectivity probe
     # we hit the service root, which is enough to exercise DNS/TCP/TLS/HTTP.
-    "client": {"stream": "/eval", "poll": "/sdk/evalx", "events": "/bulk"},
-    "mobile": {"stream": "/meval", "poll": "/msdk/evalx", "events": "/mobile"},
+    "client": {"stream": "/eval", "poll": "/sdk/evalx", "poll_app": "/sdk/evalx",
+               "events": "/bulk"},
+}
+
+ENDPOINT_ORDER = {
+    "server": ("stream", "poll", "events"),
+    # JS clients may poll via clientsdk or app (domain list alternate).
+    "client": ("stream", "poll", "poll_app", "events"),
+}
+
+ENDPOINT_LABELS = {
+    "stream": "stream (init)",
+    "poll": "poll (init)",
+    "poll_app": "poll (app)",
+    "events": "events",
 }
 
 INSTANCES = {
@@ -56,10 +68,8 @@ INSTANCES = {
                    "events": "https://events.launchdarkly.com"},
         "client": {"stream": "https://clientstream.launchdarkly.com",
                    "poll": "https://clientsdk.launchdarkly.com",
+                   "poll_app": "https://app.launchdarkly.com",
                    "events": "https://events.launchdarkly.com"},
-        "mobile": {"stream": "https://clientstream.launchdarkly.com",
-                   "poll": "https://clientsdk.launchdarkly.com",
-                   "events": "https://mobile.launchdarkly.com"},
     },
     "eu": {
         "server": {"stream": "https://stream.eu.launchdarkly.com",
@@ -67,9 +77,7 @@ INSTANCES = {
                    "events": "https://events.eu.launchdarkly.com"},
         "client": {"stream": "https://clientstream.eu.launchdarkly.com",
                    "poll": "https://clientsdk.eu.launchdarkly.com",
-                   "events": "https://events.eu.launchdarkly.com"},
-        "mobile": {"stream": "https://clientstream.eu.launchdarkly.com",
-                   "poll": "https://clientsdk.eu.launchdarkly.com",
+                   "poll_app": "https://app.eu.launchdarkly.com",
                    "events": "https://events.eu.launchdarkly.com"},
     },
     "federal": {
@@ -78,9 +86,7 @@ INSTANCES = {
                    "events": "https://events.launchdarkly.us"},
         "client": {"stream": "https://clientstream.launchdarkly.us",
                    "poll": "https://clientsdk.launchdarkly.us",
-                   "events": "https://events.launchdarkly.us"},
-        "mobile": {"stream": "https://clientstream.launchdarkly.us",
-                   "poll": "https://clientsdk.launchdarkly.us",
+                   "poll_app": "https://app.launchdarkly.us",
                    "events": "https://events.launchdarkly.us"},
     },
 }
@@ -212,12 +218,6 @@ def check_tls(host, port, timeout):
                     issuer.get("commonName", "")
         c.status = PASS
         c.detail = f"{version}, cert issued by '{issuer_org or 'unknown'}'"
-        if version and version < "TLSv1.2":
-            c.status = WARN
-            c.detail += " (below TLS 1.2)"
-            c.suggestions.append(
-                "Negotiated TLS version is below 1.2. LaunchDarkly requires "
-                "modern TLS; update the client/proxy TLS configuration.")
         # Trusted, but issued by something we don't recognize as a public CA?
         if issuer_org and not _scan_markers(issuer_org, PUBLIC_CA_MARKERS):
             vendor = _scan_markers(issuer_org, INTERCEPTION_MARKERS)
@@ -326,7 +326,7 @@ def interpret_status(c, code, label, key, proxy):
         c.suggestions.append(
             f"404 on {label}. The path or instance may be wrong for this SDK "
             "type. Confirm you are testing the correct instance "
-            "(commercial/EU/federal) and SDK side (server/client/mobile).")
+            "(commercial/EU/federal) and SDK side (server/client).")
     elif code == 405:
         c.status = FAIL
         c.suggestions.append(
@@ -561,22 +561,27 @@ def check_env_proxy():
 # --- Orchestration ----------------------------------------------------------
 
 def build_targets(args):
-    targets = {}
+    side = args.side
+    preset = INSTANCES[args.instance][side]
     if args.relay:
         base = args.relay.rstrip("/")
         targets = {"stream": base, "poll": base, "events": base}
-        side = "server"
+        # Relay v9 uses streaming + polling through the proxy for init, but JS
+        # clients may still poll via app.
+        if side == "client":
+            targets["poll_app"] = (
+                args.poll_app_url or preset.get("poll_app"))
+    elif args.stream_url or args.poll_url or args.poll_app_url or args.events_url:
+        targets = {
+            "stream": args.stream_url or preset["stream"],
+            "poll": args.poll_url or preset["poll"],
+            "events": args.events_url or preset["events"],
+        }
+        if side == "client":
+            targets["poll_app"] = (
+                args.poll_app_url or preset.get("poll_app"))
     else:
-        side = args.side
-        if args.stream_url or args.poll_url or args.events_url:
-            preset = INSTANCES[args.instance][side]
-            targets = {
-                "stream": args.stream_url or preset["stream"],
-                "poll": args.poll_url or preset["poll"],
-                "events": args.events_url or preset["events"],
-            }
-        else:
-            targets = dict(INSTANCES[args.instance][side])
+        targets = dict(preset)
     return targets, side
 
 
@@ -594,13 +599,14 @@ def run(args):
     paths = PATHS[side]
     results = []
 
-    for kind in ("stream", "poll", "events"):
+    for kind in ENDPOINT_ORDER[side]:
+        if kind not in targets:
+            continue
         url = targets[kind]
         parts = urlsplit(url)
         host = parts.hostname
         port = parts.port or (443 if parts.scheme == "https" else 80)
-        label = {"stream": "stream (init)", "poll": "poll (init)",
-                 "events": "events"}[kind]
+        label = ENDPOINT_LABELS[kind]
         tr = TargetResult(label=label, url=url, host=host, port=port)
 
         dns_c, ok = check_dns(host, args.timeout)
@@ -707,11 +713,14 @@ def main(argv=None):
         description="Diagnose LaunchDarkly SDK connectivity (init + events).")
     p.add_argument("--instance", choices=list(INSTANCES),
                    default="commercial", help="LaunchDarkly instance preset")
-    p.add_argument("--side", choices=["server", "client", "mobile"],
-                   default="server", help="SDK side to test")
+    p.add_argument("--side", choices=["server", "client"],
+                   default="server",
+                   help="SDK side to test (server-side or client-side JS)")
     p.add_argument("--relay", help="Relay Proxy base URI (overrides instance)")
     p.add_argument("--stream-url", help="Override the streaming base URI")
-    p.add_argument("--poll-url", help="Override the polling base URI")
+    p.add_argument("--poll-url", help="Override the polling base URI (clientsdk)")
+    p.add_argument("--poll-app-url",
+                   help="Override the alternate polling base URI (app; client only)")
     p.add_argument("--events-url", help="Override the events base URI")
     p.add_argument("--sdk-key", help="SDK key (prefer --sdk-key-env; argv is "
                    "visible in the process list and shell history)")
