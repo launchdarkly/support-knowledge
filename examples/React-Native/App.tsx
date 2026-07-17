@@ -20,7 +20,7 @@ const options: LDOptions = {
   applicationInfo: {
     id: 'Hello-React-Native-Expo',
     name: 'Sample Application',
-    version: '1.0.0',
+    version: SERVICE_VERSION,
     versionName: 'v1',
   },
   debug: true,
@@ -60,6 +60,8 @@ export default function App() {
   const [client, setClient] = useState<ReactNativeLDClient | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     // Initialize client
     const featureClient = new ReactNativeLDClient(
       MOBILE_KEY,
@@ -69,14 +71,21 @@ export default function App() {
 
     // Wait for identify() to complete before rendering, so flags evaluate
     // against the intended context instead of returning per-call defaults (and
-    // recording exposures against the wrong context) during startup.
+    // recording exposures against the wrong context) during startup. The
+    // `cancelled` guard avoids a state update if the component unmounts before
+    // identify() resolves.
     featureClient
       .identify(userContext)
-      .then(() => setClient(featureClient))
+      .then(() => {
+        if (!cancelled) {
+          setClient(featureClient);
+        }
+      })
       .catch((e: any) => console.error(e));
 
     // Cleanup function that runs when component unmounts
     return () => {
+      cancelled = true;
       featureClient.close();
     };
   }, []);

@@ -28,7 +28,9 @@ defaults:
 jobs:
   bundle:
     name: Bundle (${{ matrix.platform }})
-    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    # Runs on PRs, pushes, and manual dispatch. Manual runs bundle the locked
+    # dependencies; the canary (below) re-resolves `latest` and runs on schedule.
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false # both platforms must be reported even if one fails
@@ -52,7 +54,7 @@ jobs:
 
   latest-canary:
     name: Latest canary (${{ matrix.platform }})
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
