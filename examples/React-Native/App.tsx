@@ -69,19 +69,21 @@ export default function App() {
       options,
     );
 
-    // Wait for identify() to complete before rendering, so flags evaluate
-    // against the intended context instead of returning per-call defaults (and
-    // recording exposures against the wrong context) during startup. The
-    // `cancelled` guard avoids a state update if the component unmounts before
-    // identify() resolves.
+    // Render once identify() settles. On success, flags evaluate against the
+    // intended context (and record exposures correctly) rather than returning
+    // per-call defaults during startup. On failure we still render, so the demo
+    // isn't stuck on a blank screen when LaunchDarkly is unreachable or the
+    // mobile key is misconfigured — flags fall back to their per-call defaults.
+    // The `cancelled` guard avoids a state update if the component unmounts
+    // before identify() settles.
     featureClient
       .identify(userContext)
-      .then(() => {
+      .catch((e: any) => console.error(e))
+      .finally(() => {
         if (!cancelled) {
           setClient(featureClient);
         }
-      })
-      .catch((e: any) => console.error(e));
+      });
 
     // Cleanup function that runs when component unmounts
     return () => {

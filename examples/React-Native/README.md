@@ -37,6 +37,8 @@ This demo requires Node 22 or higher LTS, Android Studio with an emulated device
 
 To start fresh, run `yarn clean-reset`. To reset Watchman, run `yarn watchman-reset`.
 
+> **Note on SDK versions:** `@launchdarkly/react-native-client-sdk` and `@launchdarkly/observability-react-native` use the `latest` dist-tag so this sample always demonstrates the newest release. The tradeoff is that a fresh install can pick up a new major version. The committed `yarn.lock` keeps installs reproducible until it is refreshed, and CI runs a weekly canary that re-resolves `latest` and re-bundles both platforms to catch breaking changes early. If you need fully pinned, reproducible installs, replace `latest` with a specific version range.
+
 ## What the app does
 
 The app renders a three-step sign-up funnel:

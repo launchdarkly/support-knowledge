@@ -149,7 +149,7 @@ function PlanPicker({
           style={[styles.chip, plan === p && styles.chipOn]}
           onPress={() => onSelect(p)}
         >
-          <Text style={styles.chipText}>{p}</Text>
+          <Text style={[styles.chipText, plan === p && styles.chipTextOn]}>{p}</Text>
         </Pressable>
       ))}
     </View>
@@ -188,6 +188,7 @@ const styles = StyleSheet.create({
   },
   chipOn: { backgroundColor: '#405BFF' },
   chipText: { color: '#111' },
+  chipTextOn: { color: '#fff' },
   dropdown: {
     borderWidth: 1,
     borderColor: '#405BFF',
