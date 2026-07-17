@@ -18,9 +18,22 @@ This demo requires Node 20 or higher LTS, Android Studio with an emulated device
    MOBILE_KEY=your-mobile-key
    ```
 
-2. On the command line, run `yarn && yarn ios` for iOS builds or `yarn && yarn android` for Android builds.
+2. On the command line, run `yarn` to install dependencies.
 
-> **Observability requires a development build, not Expo Go.** The Observability plugin relies on native modules that do not run in Expo Go. Use an [Expo development build](https://docs.expo.dev/develop/development-builds/introduction/) or a standalone build. Feature flags and experimentation event tracking work in Expo Go; only the native observability data collection requires a dev build.
+3. Run the app. **Observability requires a development build, not Expo Go**, because the Observability plugin relies on native modules that do not run in Expo Go. Build and launch a dev client:
+
+   ```bash
+   # iOS: compile and run a dev build
+   npx expo run:ios
+
+   # Android: compile and run a dev build
+   npx expo run:android
+
+   # or, if a dev build is already installed, just start the bundler:
+   npx expo start --dev-client
+   ```
+
+   Feature flags and experimentation event tracking also work in plain Expo Go (`yarn ios` / `yarn android`); only the native observability data collection requires the dev build above.
 
 To start fresh, run `yarn clean-reset`. To reset Watchman, run `yarn watchman-reset`.
 

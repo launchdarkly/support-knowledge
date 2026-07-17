@@ -53,6 +53,7 @@ export default function SignupFunnel() {
   };
 
   const completeSignup = () => {
+    if (!plan) return;
     // The optional third argument is a numeric metric value.
     ldClient.track(EVENT_SIGNUP_COMPLETED, { plan }, 1);
     // Flush so exposure + conversion events reach LaunchDarkly promptly. In a

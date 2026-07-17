@@ -67,9 +67,13 @@ export default function App() {
       options,
     );
 
-    featureClient.identify(userContext).catch((e: any) => console.log(e));
-
-    setClient(featureClient);
+    // Wait for identify() to complete before rendering, so flags evaluate
+    // against the intended context instead of returning per-call defaults (and
+    // recording exposures against the wrong context) during startup.
+    featureClient
+      .identify(userContext)
+      .then(() => setClient(featureClient))
+      .catch((e: any) => console.error(e));
 
     // Cleanup function that runs when component unmounts
     return () => {

@@ -28,7 +28,7 @@ defaults:
 jobs:
   bundle:
     name: Bundle (${{ matrix.platform }})
-    if: github.event_name != 'schedule'
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false # both platforms must be reported even if one fails
