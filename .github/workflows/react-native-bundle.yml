@@ -1,0 +1,73 @@
+name: React Native example — Bundle
+
+# Bundles the examples/React-Native app with Metro for BOTH platforms. This is a
+# JS-only export (no native build), so it runs on Linux and catches
+# module-resolution, transform, and Expo-config errors before they reach a device.
+
+on:
+  pull_request:
+    paths:
+      - 'examples/React-Native/**'
+      - '.github/workflows/react-native-bundle.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'examples/React-Native/**'
+      - '.github/workflows/react-native-bundle.yml'
+  # Weekly canary: the LaunchDarkly SDKs use the floating `latest` tag, so a new
+  # SDK major can land on a fresh install without a package.json change. This
+  # re-resolves them and bundles, catching a breaking major proactively.
+  schedule:
+    - cron: '0 12 * * 1' # Mondays 12:00 UTC
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: examples/React-Native
+
+jobs:
+  bundle:
+    name: Bundle (${{ matrix.platform }})
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # both platforms must be reported even if one fails
+      matrix:
+        platform: [android, ios]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Provide placeholder env
+        # react-native-dotenv runs with safe:true, so MOBILE_KEY must exist at
+        # build time. .env is gitignored; a dummy key is fine for a static bundle.
+        run: echo "MOBILE_KEY=mob-00000000-0000-0000-0000-000000000000" > .env
+      - name: Bundle ${{ matrix.platform }}
+        run: yarn expo export --platform ${{ matrix.platform }} --output-dir dist-${{ matrix.platform }}
+
+  latest-canary:
+    name: Latest canary (${{ matrix.platform }})
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [android, ios]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Re-resolve the floating `latest` LaunchDarkly SDKs
+        run: yarn up @launchdarkly/react-native-client-sdk @launchdarkly/observability-react-native
+      - name: Provide placeholder env
+        run: echo "MOBILE_KEY=mob-00000000-0000-0000-0000-000000000000" > .env
+      - name: Bundle ${{ matrix.platform }}
+        run: yarn expo export --platform ${{ matrix.platform }} --output-dir dist-${{ matrix.platform }}

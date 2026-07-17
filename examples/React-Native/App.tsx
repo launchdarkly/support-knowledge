@@ -6,6 +6,7 @@ import {
   ReactNativeLDClient,
   LDOptions,
 } from '@launchdarkly/react-native-client-sdk';
+import { Observability } from '@launchdarkly/observability-react-native';
 import Welcome from './src/welcome';
 
 const options: LDOptions = {
@@ -18,7 +19,13 @@ const options: LDOptions = {
     versionName: 'v1',
   },
   debug: true,
-}
+  plugins: [
+    new Observability({
+      serviceName: 'my-react-native-app',
+      serviceVersion: '1.0.0',
+    }),
+  ],
+};
 
 const userContext = { kind: 'user', key: 'test-hello' };
 
