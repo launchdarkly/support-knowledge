@@ -8,7 +8,7 @@ This sample app demonstrates three LaunchDarkly capabilities in one React Native
 
 For more comprehensive instructions, visit your [Quickstart page](https://app.launchdarkly.com/quickstart#/) or the [React Native reference guide](https://launchdarkly.com/docs/sdk/client-side/react/react-native).
 
-This demo requires Node 20 or higher LTS, Android Studio with an emulated device running API 34, and Watchman (for Linux or macOS users).
+This demo requires Node 22 or higher LTS, Android Studio with an emulated device running API 34, and Watchman (for Linux or macOS users).
 
 ## Build instructions
 

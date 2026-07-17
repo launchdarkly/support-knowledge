@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '22'
       - name: Enable Corepack
         run: corepack enable
       - name: Install dependencies
@@ -64,7 +64,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '22'
       - name: Enable Corepack
         run: corepack enable
       - name: Re-resolve the floating `latest` LaunchDarkly SDKs
