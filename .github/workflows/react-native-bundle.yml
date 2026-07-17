@@ -70,7 +70,7 @@ jobs:
       - name: Re-resolve the floating `latest` LaunchDarkly SDKs
         run: yarn up @launchdarkly/react-native-client-sdk @launchdarkly/observability-react-native
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --immutable
       - name: Provide placeholder env
         run: echo "MOBILE_KEY=mob-00000000-0000-0000-0000-000000000000" > .env
       - name: Bundle ${{ matrix.platform }}
