@@ -26,6 +26,9 @@ const EVENT_SIGNUP_COMPLETED = 'signup-completed';
 
 type Step = 'start' | 'info' | 'pay' | 'done';
 type Plan = 'basic' | 'pro';
+// The supported flag values. The flag is a string, so we normalize the raw
+// value to this union to keep comparisons type-safe.
+type SignupVariation = 'control' | 'dropdown' | 'radio';
 
 export default function SignupFunnel() {
   const ldClient = useLDClient();
@@ -33,7 +36,10 @@ export default function SignupFunnel() {
   // ('control') is returned before the flag loads or if the flag is missing.
   // Evaluating the flag here (where the experience renders) records the
   // experiment exposure event.
-  const variation = useStringVariation(FLAG_KEY, 'control');
+  const rawVariation = useStringVariation(FLAG_KEY, 'control');
+  // Normalize to the supported union; unexpected flag values fall back to control.
+  const variation: SignupVariation =
+    rawVariation === 'dropdown' || rawVariation === 'radio' ? rawVariation : 'control';
 
   const [step, setStep] = useState<Step>('start');
   const [plan, setPlan] = useState<Plan | null>(null);
@@ -109,7 +115,7 @@ function PlanPicker({
   plan,
   onSelect,
 }: {
-  variation: string;
+  variation: SignupVariation;
   plan: Plan | null;
   onSelect: (plan: Plan) => void;
 }) {

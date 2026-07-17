@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { MOBILE_KEY } from '@env';
 import {
   AutoEnvAttributes,
@@ -93,7 +94,13 @@ export default function App() {
   }, []);
 
   if (!client) {
-    return null;
+    // Minimal loading state while the SDK initializes, so the screen isn't blank.
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color="#405BFF" />
+        <Text style={styles.loadingText}>Connecting to LaunchDarkly…</Text>
+      </View>
+    );
   }
 
   return (
@@ -102,3 +109,13 @@ export default function App() {
     </LDProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  loadingText: { marginTop: 12, color: '#555' },
+});
