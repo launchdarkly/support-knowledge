@@ -73,10 +73,14 @@ const options: LDOptions = {
       // Custom headers added to OTLP exports.
       customHeaders: {},
 
-      // De-duplicate repeated flag-exposure events within this time window and
-      // cache size, to reduce event volume.
-      flagExposureDedupeWindowMillis: 60_000,
-      flagExposureDedupeMaxSize: 2000,
+      // The Observability plugin emits flag-exposure telemetry for every
+      // evaluation by default. In a high-traffic app you can de-duplicate
+      // repeated exposures (same flag+context+value) within a window to reduce
+      // telemetry volume. Left at the default (disabled) here. This tunes
+      // observability data only — it does NOT affect experiment exposure
+      // attribution, which the LaunchDarkly SDK handles separately.
+      // flagExposureDedupeWindowMillis: 60_000,
+      // flagExposureDedupeMaxSize: 2000,
 
       // Give contexts a friendly display name in the LaunchDarkly UI.
       contextFriendlyName: (context) =>
