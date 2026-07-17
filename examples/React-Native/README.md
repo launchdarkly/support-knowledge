@@ -3,7 +3,7 @@
 This sample app demonstrates three LaunchDarkly capabilities in one React Native (Expo) app:
 
 - **Feature flags & experimentation** — a multi-step sign-up "funnel" whose UI is controlled by a flag, so it can be run as an A/B experiment.
-- **Observability** — the LaunchDarkly Observability plugin, initialized in [`App.tsx`](./App.tsx) with every supported option shown and documented.
+- **Observability** — the LaunchDarkly Observability plugin, initialized in [`App.tsx`](./App.tsx) with a few common options documented. See the [observability config docs](https://launchdarkly.com/docs/sdk/features/observability-config-client-side#react-native) for the full list.
 - **Metrics / event tracking** — each funnel step sends a custom event with `ldClient.track()`, which powers both the experiment's funnel metric group and the Observability product-analytics funnels.
 
 For more comprehensive instructions, visit your [Quickstart page](https://app.launchdarkly.com/quickstart#/) or the [React Native reference guide](https://launchdarkly.com/docs/sdk/client-side/react/react-native).

@@ -25,9 +25,9 @@ const options: LDOptions = {
   },
   debug: true,
   plugins: [
-    // LaunchDarkly Observability plugin. Every supported React Native option is
-    // shown below with an explanatory comment. All of them are optional — the
-    // plugin works with a bare `new Observability()`. Docs:
+    // LaunchDarkly Observability plugin. A few common options are shown; all are
+    // optional and the plugin works with a bare `new Observability()`. For the
+    // full list of options, see:
     //   https://launchdarkly.com/docs/sdk/observability/react-native
     //   https://launchdarkly.com/docs/sdk/features/observability-config-client-side#react-native
     new Observability({
@@ -41,46 +41,6 @@ const options: LDOptions = {
         'app.tier': 'sample',
         'deploy.environment': 'development',
       },
-
-      // Attach a W3C `traceparent` header to requests whose URL matches, so
-      // mobile traces link to your backend's traces. Use `true` to match your
-      // own domain, or a list of substrings / regexes.
-      tracingOrigins: ['api.example.com', /\.internal\.example\.com$/],
-
-      // Never record headers/bodies or propagate trace headers to these URLs.
-      urlBlocklist: ['https://secure.example.com/token'],
-
-      // How long (ms) a reload or relaunch continues the same session.
-      // Default is 15 minutes.
-      sessionTimeout: 15 * 60 * 1000,
-
-      // Network request capture. `recordHeadersAndBody` defaults to false.
-      networkRecording: {
-        recordHeadersAndBody: false,
-        // networkHeadersToRedact: ['Authorization'],
-        // networkBodyKeysToRedact: ['password'],
-      },
-
-      // Feature toggles — keep false to collect everything.
-      disableErrorTracking: false,
-      disableLogs: false,
-      disableTraces: false,
-      disableMetrics: false,
-
-      // Plugin-level debug logging (separate from the SDK-level `debug` above).
-      debug: true,
-
-      // Custom headers added to OTLP exports.
-      customHeaders: {},
-
-      // The Observability plugin emits flag-exposure telemetry for every
-      // evaluation by default. In a high-traffic app you can de-duplicate
-      // repeated exposures (same flag+context+value) within a window to reduce
-      // telemetry volume. Left at the default (disabled) here. This tunes
-      // observability data only — it does NOT affect experiment exposure
-      // attribution, which the LaunchDarkly SDK handles separately.
-      // flagExposureDedupeWindowMillis: 60_000,
-      // flagExposureDedupeMaxSize: 2000,
 
       // Give contexts a friendly display name in the LaunchDarkly UI.
       contextFriendlyName: (context) =>
