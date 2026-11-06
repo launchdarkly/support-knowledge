@@ -14,20 +14,28 @@ import {
 // metric group that the experiment measures. See the README for the exact
 // LaunchDarkly UI setup required to see results.
 
-// Flag with three string variations: "control", "dropdown", "radio".
+/** String flag with three variations: "control", "dropdown", "radio". */
 const FLAG_KEY = 'signup-flow-variation';
 
 // One custom event per funnel step, tracked in the order the user hits them.
 // Create a metric (Custom / "Count distinct units (Percent)") for each, then
 // combine them — in this order — into a funnel metric group.
+
+/** Funnel step 1: user taps "Sign up". No data payload. */
 const EVENT_SIGNUP_STARTED = 'signup-button-clicked';
+/** Funnel step 2: user picks a plan and continues. Data: `{ plan }`. */
 const EVENT_INFO_ENTERED = 'signup-info-entered';
+/** Funnel step 3: user completes sign-up. Data: `{ plan }`, metric value `1`. Followed by a flush. */
 const EVENT_SIGNUP_COMPLETED = 'signup-completed';
 
+/** Local screen state for the funnel UI. Not tracked directly. */
 type Step = 'start' | 'info' | 'pay' | 'done';
+/** Plan the user selects; sent as event data on steps 2 and 3. */
 type Plan = 'basic' | 'pro';
-// The supported flag values. The flag is a string, so we normalize the raw
-// value to this union to keep comparisons type-safe.
+/**
+ * The supported flag values. The flag is a string, so the raw value is
+ * normalized to this union to keep comparisons type-safe.
+ */
 type SignupVariation = 'control' | 'dropdown' | 'radio';
 
 export default function SignupFunnel() {

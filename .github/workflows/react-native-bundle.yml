@@ -50,7 +50,21 @@ jobs:
         # build time. .env is gitignored; a dummy key is fine for a static bundle.
         run: echo "MOBILE_KEY=mob-00000000-0000-0000-0000-000000000000" > .env
       - name: Bundle ${{ matrix.platform }}
-        run: yarn expo export --platform ${{ matrix.platform }} --output-dir dist-${{ matrix.platform }}
+        # Tee the Metro output to a log so it can be uploaded on failure.
+        # pipefail keeps the step failing when `expo export` fails.
+        shell: bash
+        run: |
+          set -o pipefail
+          yarn expo export --platform ${{ matrix.platform }} --output-dir dist-${{ matrix.platform }} 2>&1 | tee bundle-${{ matrix.platform }}.log
+      - name: Upload bundle log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-log-${{ matrix.platform }}
+          # upload-artifact ignores defaults.run.working-directory.
+          path: examples/React-Native/bundle-${{ matrix.platform }}.log
+          if-no-files-found: ignore
+          retention-days: 7
 
   latest-canary:
     name: Latest canary (${{ matrix.platform }})
@@ -74,4 +88,18 @@ jobs:
       - name: Provide placeholder env
         run: echo "MOBILE_KEY=mob-00000000-0000-0000-0000-000000000000" > .env
       - name: Bundle ${{ matrix.platform }}
-        run: yarn expo export --platform ${{ matrix.platform }} --output-dir dist-${{ matrix.platform }}
+        shell: bash
+        run: |
+          set -o pipefail
+          yarn expo export --platform ${{ matrix.platform }} --output-dir dist-${{ matrix.platform }} 2>&1 | tee bundle-${{ matrix.platform }}.log
+      - name: Upload canary log and lockfile on failure
+        # The re-resolved yarn.lock shows exactly which SDK versions broke the bundle.
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: canary-log-${{ matrix.platform }}
+          path: |
+            examples/React-Native/bundle-${{ matrix.platform }}.log
+            examples/React-Native/yarn.lock
+          if-no-files-found: ignore
+          retention-days: 7
