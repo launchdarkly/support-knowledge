@@ -11,38 +11,47 @@
     "watchman-reset": "watchman watch-del-all && watchman shutdown-server"
   },
   "dependencies": {
-    "@launchdarkly/react-native-client-sdk": "^10.9.8",
+    "@launchdarkly/observability-react-native": "latest",
+    "@launchdarkly/react-native-client-sdk": "latest",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/cli-server-api": "^17.0.0",
-    "expo": "^52.0.44",
-    "expo-splash-screen": "~0.29.22",
-    "expo-status-bar": "~2.0.1",
-    "react": "18.3.1",
-    "react-native": "0.76.9",
+    "expo": "^57.0.7",
+    "expo-splash-screen": "~57.0.4",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-native": "0.86.0",
     "react-native-dotenv": "^3.4.11"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.10",
-    "@types/react": "~18.3.12",
+    "@babel/core": "^8.0.1",
+    "@types/react": "~19.2.4",
     "@types/react-native-dotenv": "^0.2.2",
-    "typescript": "^5.8.3"
+    "typescript": "^7.0.2"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "@babel/core",
+        "typescript"
+      ]
+    }
   },
   "private": true,
   "resolutions": {
     "@xmldom/xmldom@^0.8.8": "0.8.15",
     "@xmldom/xmldom@~0.7.7": "0.8.15",
-    "body-parser@^1.20.3": "1.20.6",
+    "body-parser@^1.20.3": "1.20.9",
     "brace-expansion@^1.1.7": "1.1.21",
     "brace-expansion@^2.0.1": "2.1.7",
-    "brace-expansion@^2.0.2": "2.1.7",
     "browserslist@^4.24.0": "4.28.7",
     "browserslist@^4.24.4": "4.28.7",
+    "browserslist@^4.25.0": "4.28.7",
     "compression@^1.7.1": "1.8.2",
     "compression@^1.7.4": "1.8.2",
     "form-data@^3.0.1": "3.0.5",
     "glob@^10.2.2": "10.5.0",
     "glob@^10.3.10": "10.5.0",
     "glob@^10.4.2": "10.5.0",
-    "ip-address@^10.0.1": "10.7.4",
     "js-yaml@^3.13.1": "3.15.2",
     "js-yaml@^4.1.0": "4.3.2",
     "launch-editor@^2.9.1": "2.14.2",
@@ -62,16 +71,13 @@
     "postcss@~8.4.32": "8.5.26",
     "qs@6.13.0": "6.15.3",
     "qs@~6.15.1": "6.16.0",
-    "shell-quote@^1.10.0": "1.11.0",
     "shell-quote@^1.6.1": "1.11.0",
     "shell-quote@^1.8.1": "1.11.0",
-    "shell-quote@^1.8.4": "1.11.0",
-    "socks@^2.8.3": "2.8.7",
     "source-map-js@^1.2.1": "1.2.2",
     "tar@^6.1.11": "7.5.22",
     "tar@^6.2.1": "7.5.22",
     "tar@^7.4.3": "7.5.22",
-    "undici@^6.18.2": "6.29.1",
+    "undici@^6.18.2": "6.28.0",
     "ws@^6.2.3": "6.2.6",
     "ws@^7": "7.5.13",
     "ws@^7.5.10": "7.5.13",
