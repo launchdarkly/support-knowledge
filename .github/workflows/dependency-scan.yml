@@ -1,0 +1,15 @@
+name: Dependency Scan
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  dependency-scan:
+    uses: launchdarkly/common-workflows/.github/workflows/dependency-scan.yml@main
+    with:
+      types: 'generic'
+      runs-on: 'ubuntu-latest'
+    secrets: inherit
